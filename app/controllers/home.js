@@ -14,3 +14,13 @@ router.get('/', function (req, res, next) {
       articles: articles
     });
 });
+
+
+router.post('/upload', function (req, res) {
+
+  var articles = [new Article(), new Article()];
+    res.render('index', {
+      title: 'Welcome to Mosaic Creator',
+      articles: articles
+    });
+});
