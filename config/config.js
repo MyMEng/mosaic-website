@@ -1,5 +1,6 @@
 var path = require('path'),
     rootPath = path.normalize(__dirname + '/..'),
+    port = process.env.PORT || 3000,
     env = process.env.NODE_ENV || 'development';
 
 var config = {
@@ -8,7 +9,7 @@ var config = {
     app: {
       name: 'mosaic-website'
     },
-    port: 3000,
+    port: port,
   },
 
   test: {
@@ -16,7 +17,7 @@ var config = {
     app: {
       name: 'mosaic-website'
     },
-    port: 3000,
+    port: port,
   },
 
   production: {
@@ -24,7 +25,7 @@ var config = {
     app: {
       name: 'mosaic-website'
     },
-    port: 3000,
+    port: port,
   }
 };
 
