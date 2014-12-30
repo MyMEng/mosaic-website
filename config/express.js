@@ -30,6 +30,7 @@ module.exports = function(app, config) {
 
   app.use(function (req, res, next) {
     var err = new Error('Not Found');
+    console.log(req);
     err.status = 404;
     next(err);
   });

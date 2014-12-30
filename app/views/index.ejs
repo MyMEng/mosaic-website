@@ -8,4 +8,15 @@
   <input type="submit" value="Upload" />
   </form>
 
+  <% images.forEach(function(image) { %>
+
+
+  <div id="pictures">
+  	<ul>
+  		<li><img src="<%= image %>" width="100"/></li>
+  	</ul>
+  </div>
+
+  <% }); %>
+
 <% include footer %>
