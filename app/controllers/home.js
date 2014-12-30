@@ -79,41 +79,46 @@ router.post('/upload', function (req, res) {
   form.on('part', function(part){
     if (part.filename) {
 
+      // File size
       var size = part.byteCount - part.byteOffset;
-      var name = part.filename;
+      
+      // New random name
+      var name = uuid.v4();
 
-      // See if container exists
+      // Make sure that the container exists
       blobSvc.createContainerIfNotExists('imagecontainer', function(error, result, response){
-        if(!error){
+        
+        if(!error) {
 
-          // If true, create blob
+          // Create blob
           blobSvc.createBlockBlobFromStream('imagecontainer', name, part, size, function(error){
-            if(!error){
-                // Blob uploaded
-                // Make a request for analysis
-                var queueName = "imagesqueue";
-
-                // Create the queue if it doesn't exist
-                queueSvc.createQueueIfNotExists(queueName, function(error, result, response){
-                  if(!error){
-
-                      queueSvc.createMessage(queueName, name.toString('ascii'), function(error, result, response){
-                      if(!error){
-                        
-                        // Message inserted
-
-                      } else {
-                        console.log("Error inserting the message", error)
-                      }
-                    });
-                  } else {
-                    console.log("Error creating the queue", error)
-                  }
-                });
-
-            } else {
-              console.log(error);
+            if(error) {
+              console.log("Error creating blob", error);
+              return;
             }
+            // Blob uploaded
+            // Make a request for analysis
+            var queueName = "imagesqueue";
+
+            // Create the queue if it doesn't exist
+            queueSvc.createQueueIfNotExists(queueName, function(error, result, response){
+              
+              if(error) {
+                console.log("Error creating the queue", error);
+                return;
+              }
+
+              queueSvc.createMessage(queueName, name.toString('ascii'), function(error, result, response){
+                
+                if(error){
+                  console.log("Error inserting the message", error);
+                  return;
+                }
+
+                // Message inserted
+                return;
+              });
+            });
           });
         } else {
           console.log(error);
