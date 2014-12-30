@@ -2,9 +2,14 @@ var express = require('express'),
   router = express.Router(),
   Article = require('../models/article'),
   multiparty = require('multiparty'),
-  azure = require('azure-storage'),
   uuid = require('node-uuid'),
   google = require('googleapis'),
+
+  azure = require('azure-storage'),
+  queueSvc = azure.createQueueService(),              
+  blobSvc = azure.createBlobService(),
+  tableSvc = azure.createTableService(),
+
   entityGen = azure.TableUtilities.entityGenerator,
   OAuth2Client = google.auth.OAuth2,
   plus = google.plus('v1');
@@ -24,11 +29,7 @@ module.exports = function (app) {
 
 router.get('/', function (req, res, next) {
 
-  var articles = [new Article(), new Article()];
-
   var photos = [];
-  var blobSvc = azure.createBlobService();
-
   
   // generate a url that asks permissions for Google+ and Google Calendar scopes
   var scopes = [
@@ -53,7 +54,6 @@ router.get('/', function (req, res, next) {
 
       res.render('index', {
         title: 'Welcome to Mosaic Creator',
-        articles: articles,
         images: photos,
         authUrl: url
       });
@@ -63,7 +63,6 @@ router.get('/', function (req, res, next) {
 
       res.render('index', {
         title: 'Welcome to Mosaic Creator',
-        articles: articles,
         images: [],
         authUrl: url
       });
@@ -74,7 +73,6 @@ router.get('/', function (req, res, next) {
 // Upload images to the blob
 router.post('/upload', function (req, res) {
 
-  var blobSvc = azure.createBlobService();
   var form = new multiparty.Form();
   
   // Handle form data
@@ -93,20 +91,16 @@ router.post('/upload', function (req, res) {
             if(!error){
                 // Blob uploaded
                 // Make a request for analysis
-                var queueSvc = azure.createQueueService();
                 var queueName = "imagesqueue";
 
                 // Create the queue if it doesn't exist
                 queueSvc.createQueueIfNotExists(queueName, function(error, result, response){
                   if(!error){
-                     var urlToImage = "http://" + blobSvc.storageAccount + ".blob.core.windows.net/imagecontainer/"+ name;
 
-                     queueSvc.createMessage(queueName, urlToImage.toString('ascii'), function(error, result, response){
+                      queueSvc.createMessage(queueName, name.toString('ascii'), function(error, result, response){
                       if(!error){
                         
                         // Message inserted
-                        console.log(result)
-                        console.log(response)
 
                       } else {
                         console.log("Error inserting the message", error)
