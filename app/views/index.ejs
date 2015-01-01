@@ -1,15 +1,12 @@
 <% include header %>
 
-  
+  <h1><%-title %></h1>
   <p>Upload your file.</p>
 
   <form action="/upload" method="post" enctype="multipart/form-data">
   <input type="file" name="snapshot" />
   <input type="submit" value="Upload" />
   </form>
-
-  <a href="<%= authUrl %>">Login</a>
-
 
   <div id="pictures">
 	<ul>

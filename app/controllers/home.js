@@ -28,45 +28,38 @@ module.exports = function (app) {
 
 router.get('/', function (req, res, next) {
 
-  var photos = [];
-  
-  // generate a url that asks permissions for Google+ and Google Calendar scopes
-  var scopes = [
-    'https://www.googleapis.com/auth/plus.me',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile'
-  ];
+  // Check if session is there
+  if(req.session) {
+    var photos = [];
+    
+    blobSvc.listBlobsSegmented('imagecontainer', null, function(error, result, response){
+      if(!error){
+        // result contains the entries
+        result.entries.forEach(function(entry) {
+          // http://sally.blob.core.windows.net/movies/MOV1.AVI
+          photos.push("http://" + blobSvc.storageAccount + ".blob.core.windows.net/imagecontainer/"+ entry.name);
+        });
 
-  var url = oauth2Client.generateAuthUrl({
-    access_type: 'offline', // 'online' (default) or 'offline' (gets refresh_token)
-    scope: scopes // If you only need one scope you can pass it as string
-  });
+        res.render('index', {
+          title: 'Mosaic Creator - Main',
+          images: photos,
+        });
 
+      } else {
+        console.log("Error listing the container", error);
 
-  blobSvc.listBlobsSegmented('imagecontainer', null, function(error, result, response){
-    if(!error){
-      // result contains the entries
-      result.entries.forEach(function(entry) {
-        // http://sally.blob.core.windows.net/movies/MOV1.AVI
-        photos.push("http://" + blobSvc.storageAccount + ".blob.core.windows.net/imagecontainer/"+ entry.name);
-      });
-
-      res.render('index', {
-        title: 'Welcome to Mosaic Creator',
-        images: photos,
-        authUrl: url
-      });
-
-    } else {
-      console.log("Error listing the container", error);
-
-      res.render('index', {
-        title: 'Welcome to Mosaic Creator',
-        images: [],
-        authUrl: url
-      });
-    }
-  });
+        res.render('index', {
+          title: 'Mosaic Creator - Error',
+          images: []
+        });
+      }
+    });
+  } else {
+    // Go to landing page
+    res.render('landing', {
+      title: "Welcome to Mosaic Creator"
+    });
+  }
 });
 
 // Upload images to the blob
@@ -147,6 +140,8 @@ router.get("/login", function(req,res) {
     scope: scopes // If you only need one scope you can pass it as string
   });
 
+
+  // Go to the generated url
   res.redirect(url);
 
 });
