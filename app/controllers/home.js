@@ -29,11 +29,14 @@ module.exports = function (app) {
 router.get('/', function (req, res, next) {
 
   // Check if session is there
-  if(req.session) {
+  if(req.session && req.session.user) {
     var photos = [];
     
     blobSvc.listBlobsSegmented('imagecontainer', null, function(error, result, response){
       if(!error){
+
+        console.log(req.session.user)
+
         // result contains the entries
         result.entries.forEach(function(entry) {
           // http://sally.blob.core.windows.net/movies/MOV1.AVI
