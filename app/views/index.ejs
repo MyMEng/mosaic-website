@@ -1,6 +1,6 @@
 <% include header %>
 
-  <h1><%-title %></h1>
+  
   <p>Upload your file.</p>
 
   <form action="/upload" method="post" enctype="multipart/form-data">
@@ -10,15 +10,13 @@
 
   <a href="<%= authUrl %>">Login</a>
 
-  <% images.forEach(function(image) { %>
-
 
   <div id="pictures">
-  	<ul>
-  		<li><img src="<%= image %>" width="100"/></li>
-  	</ul>
+	<ul>
+		<% images.forEach(function(image) { %>
+			<li><img src="<%= image %>" width="100"/></li>
+		<% }); %>
+   	</ul>
   </div>
-
-  <% }); %>
 
 <% include footer %>

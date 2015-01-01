@@ -5,6 +5,9 @@ body {
 a {
   color: #00B7FF;
 }
-#pictures ul li {
+#pictures ul {
   list-style: none;
+}
+#pictures ul li {
+  display: inline;
 }

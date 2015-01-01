@@ -1,6 +1,5 @@
 var express = require('express'),
   router = express.Router(),
-  Article = require('../models/article'),
   multiparty = require('multiparty'),
   uuid = require('node-uuid'),
   google = require('googleapis'),
@@ -82,8 +81,11 @@ router.post('/upload', function (req, res) {
       // File size
       var size = part.byteCount - part.byteOffset;
       
+      // Grab extension
+      var re = /(?:\.([^.]+))?$/;
+      var ext = re.exec(part.filename)[1];  
       // New random name
-      var name = uuid.v4();
+      var name = uuid.v4() + "." + ext;
 
       // Make sure that the container exists
       blobSvc.createContainerIfNotExists('imagecontainer', function(error, result, response){
@@ -133,6 +135,19 @@ router.post('/upload', function (req, res) {
 
 router.get("/login", function(req,res) {
   
+  // generate a url that asks permissions for Google+ and Google Calendar scopes
+  var scopes = [
+    'https://www.googleapis.com/auth/plus.me',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile'
+  ];
+
+  var url = oauth2Client.generateAuthUrl({
+    access_type: 'offline', // 'online' (default) or 'offline' (gets refresh_token)
+    scope: scopes // If you only need one scope you can pass it as string
+  });
+
+  res.redirect(url);
 
 });
 
@@ -146,6 +161,9 @@ router.get("/oauth2callback", function(req, res) {
       console.log(tokens);
       oauth2Client.setCredentials(tokens);
       res.redirect("/");
+    } else {
+      console.log("Error getting token.");
+      throw err;
     }
   });
 });
