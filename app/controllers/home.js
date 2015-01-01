@@ -43,6 +43,7 @@ router.get('/', function (req, res, next) {
         res.render('index', {
           title: 'Mosaic Creator - Main',
           images: photos,
+          user: req.session.user
         });
 
       } else {
@@ -50,14 +51,15 @@ router.get('/', function (req, res, next) {
 
         res.render('index', {
           title: 'Mosaic Creator - Error',
-          images: []
+          images: [],
+          user: req.session.user
         });
       }
     });
   } else {
     // Go to landing page
     res.render('landing', {
-      title: "Welcome to Mosaic Creator"
+      title: "Welcome to Mosaic Creator", user: null
     });
   }
 });
@@ -149,16 +151,57 @@ router.get("/login", function(req,res) {
 // Google OAuth 2 callback
 router.get("/oauth2callback", function(req, res) {
   var code = req.query.code;
+  var self = this;
 
-  oauth2Client.getToken(code, function(err, tokens) {
-    // Now tokens contains an access_token and an optional refresh_token. Save them.
-    if(!err) {
-      console.log(tokens);
-      oauth2Client.setCredentials(tokens);
-      res.redirect("/");
-    } else {
-      console.log("Error getting token.");
-      throw err;
-    }
+    oauth2Client.getToken(code, function(err, tokens) {
+      // Now tokens contains an access_token and an optional refresh_token. Save them.
+      if(!err) {
+        console.log(tokens);
+        oauth2Client.setCredentials(tokens);
+        
+        getUserProfile(oauth2Client, function(err, profile) {
+
+          if(err) {
+            console.log(err);
+            res.redirect("/");
+            return;
+          } else {
+
+            // Find user oc create in the database
+            findOrCreateUser(profile, function(err, user) {
+              if(err) {
+                console.log(err);
+                res.redirect("/");
+                return;
+              } else {
+                // Set session
+               req.session.user = user;
+                res.redirect("/");
+              }
+            });
+          }
+
+        });
+        
+      } else {
+        console.log("Error getting token.");
+      }
   });
+  
 });
+
+function getUserProfile(oauth2Client, callback) {
+  // retrieve user profile
+  plus.people.get({ userId: 'me', auth: oauth2Client }, function(err, profile) {
+    callback(err, profile);
+  });
+};
+
+function findOrCreateUser(profile, callback) {
+  
+  var user = { 
+    email: profile.emails[0].value
+  };
+
+  callback(null, user);
+}

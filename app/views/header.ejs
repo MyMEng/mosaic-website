@@ -48,7 +48,11 @@
         </ul>
 
         <ul class="nav navbar-nav navbar-right">
+        <% if(user) { %>
+          <li><a href="#"><%- user.email %></a></li>
+        <% } else { %>
           <li><a href="/login">Login</a></li>
+        <% } %>
         </ul>
       </div>
     </div> <!-- /.container -->
