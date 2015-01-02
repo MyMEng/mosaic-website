@@ -13,12 +13,16 @@ var express = require('express'),
   OAuth2Client = google.auth.OAuth2,
   plus = google.plus('v1');
 
-var User = require("../models/user");
+var User = require("../models/user")
+var Photo = require("../models/photo")
 
 // Initialize model
 var userModel = new User(tableSvc, "users", "allusers");
+var photoModel = new Photo(tableSvc, "photos", "allphotos");
 
-// Client ID and client secret are available at
+// Client ID and client secret are available atvar azure = require('azure-storage');
+var entityGen = azure.TableUtilities.entityGenerator;
+var uuid = require('node-uuid');
 // https://code.google.com/apis/console
 var CLIENT_ID = process.env.CLIENT_ID;
 var CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -36,32 +40,33 @@ router.get('/', function (req, res, next) {
   // Check if session is there
   if(req.session && req.session.user) {
     var photos = [];
-    
-    blobSvc.listBlobsSegmented('imagecontainer', null, function(error, result, response){
-      if(!error){
 
-        // result contains the entries
-        result.entries.forEach(function(entry) {
-          // http://sally.blob.core.windows.net/movies/MOV1.AVI
-          photos.push("http://" + blobSvc.storageAccount + ".blob.core.windows.net/imagecontainer/"+ entry.name);
-        });
+    // Get photos from table
+    var query = new azure.TableQuery()
+        .where('PartitionKey eq ?', 'allphotos')
+        .and('userId eq ?', req.session.user.googleId._);
 
-        res.render('index', {
-          title: 'Mosaic Creator - Main',
-          images: photos,
-          user: req.session.user
-        });
 
-      } else {
-        console.log("Error listing the container", error);
-
-        res.render('index', {
-          title: 'Mosaic Creator - Error',
-          images: [],
-          user: req.session.user
-        });
+    photoModel.find(query, function(err, items) {
+      if(err) {
+        throw err;
       }
+
+      // result contains the entries
+      items.forEach(function(item) {
+        // http://sally.blob.core.windows.net/movies/MOV1.AVI
+        photos.push("http://" + blobSvc.storageAccount + ".blob.core.windows.net/imagecontainer/"
+          + item.RowKey._);
+      });
+
+      res.render('index', {
+        title: 'Mosaic Creator - Main',
+        images: photos,
+        user: req.session.user
+      });
+
     });
+    
   } else {
     // Go to landing page
     res.render('landing', {
@@ -103,15 +108,31 @@ router.post('/upload', function (req, res) {
             // Make a request for analysis
             var queueName = "imagesqueue";
 
+            // Create 
             // Create the queue if it doesn't exist
             queueSvc.createQueueIfNotExists(queueName, function(error, result, response){
               
+
               if(error) {
                 console.log("Error creating the queue", error);
                 return;
               }
 
-              queueSvc.createMessage(queueName, name.toString('ascii'), function(error, result, response){
+              var photoItem = {
+                imageName: name,
+                hue: -1,
+                saturation: -1,
+                value: -1,
+                local: true,
+                thumbnail: "",
+                userId: req.session.user.googleId._
+              };
+              
+              // Add entry to user photos
+              photoModel.addItem(photoItem, function(err) {
+
+                // Add message the queue
+                queueSvc.createMessage(queueName, photoItem.imageName, function(error, result, response){
                 
                 if(error){
                   console.log("Error inserting the message", error);
@@ -120,6 +141,9 @@ router.post('/upload', function (req, res) {
 
                 // Message inserted
                 return;
+              });
+              
+
               });
             });
           });
