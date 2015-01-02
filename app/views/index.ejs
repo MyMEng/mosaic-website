@@ -1,19 +1,36 @@
 <% include header %>
+  
+  <div class="page-header">
+    <h1><%-title %></h1>
+  </div>
 
-  <h1><%-title %></h1>
-  <p>Upload your file.</p>
+  <div id="upload-form" class="row">
+    <div class="col-sm-12">
+    
+    <form action="/upload" method="post" 
+      enctype="multipart/form-data">
+      
+      <div class="form-group">
+        <label for="snapshot">Choose the image you want to make a mosaic of.</label>
+        <input type="file" class="form-control" name="snapshot" />
+        <p class="help-block">We will create a mosaic of this picture based on the images you will submit in next step.</p>
+      </div>
+      
+      <input type="submit" class="btn btn-default" value="Upload" />
+    
+    </form>
 
-  <form action="/upload" method="post" enctype="multipart/form-data">
-  <input type="file" name="snapshot" />
-  <input type="submit" value="Upload" />
-  </form>
+    </div>
+  </div>
 
-  <div id="pictures">
-	<ul>
+  <div id="pictures row">
 		<% images.forEach(function(image) { %>
-			<li><img src="<%= image %>" width="100"/></li>
+      <div class="col-sm-6 col-md-4">
+  			<div class="thumbnail">
+          <img src="<%= image %>" />
+        </div>
+      </div>
 		<% }); %>
-   	</ul>
   </div>
 
 <% include footer %>

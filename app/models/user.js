@@ -2,8 +2,6 @@ var azure = require('azure-storage');
 var entityGen = azure.TableUtilities.entityGenerator;
 var uuid = require('node-uuid');
 
-module.exports = User;
-
 function User(storageClient, tableName, partitionKey) {
   this.storageClient = storageClient;
   this.tableName = tableName;
@@ -38,6 +36,7 @@ User.prototype = {
       RowKey: entityGen.String(uuid()),
       email: entityGen.String(item.email),
       googleId: entityGen.String(item.googleId),
+      accessToken: entityGen.String(item.accessToken)
     };
     self.storageClient.insertEntity(self.tableName, itemDescriptor, function entityInserted(error) {
       if(error){  
@@ -63,3 +62,6 @@ User.prototype = {
     });
   }
 }
+
+
+module.exports = User;

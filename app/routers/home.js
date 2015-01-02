@@ -13,6 +13,11 @@ var express = require('express'),
   OAuth2Client = google.auth.OAuth2,
   plus = google.plus('v1');
 
+var User = require("../models/user");
+
+// Initialize model
+var userModel = new User(tableSvc, "users", "allusers");
+
 // Client ID and client secret are available at
 // https://code.google.com/apis/console
 var CLIENT_ID = process.env.CLIENT_ID;
@@ -34,8 +39,6 @@ router.get('/', function (req, res, next) {
     
     blobSvc.listBlobsSegmented('imagecontainer', null, function(error, result, response){
       if(!error){
-
-        console.log(req.session.user)
 
         // result contains the entries
         result.entries.forEach(function(entry) {
@@ -131,26 +134,6 @@ router.post('/upload', function (req, res) {
   res.send('OK.. uploading');
 });
 
-router.get("/login", function(req,res) {
-  
-  // generate a url that asks permissions for Google+ and Google Calendar scopes
-  var scopes = [
-    'https://www.googleapis.com/auth/plus.me',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile'
-  ];
-
-  var url = oauth2Client.generateAuthUrl({
-    access_type: 'offline', // 'online' (default) or 'offline' (gets refresh_token)
-    scope: scopes // If you only need one scope you can pass it as string
-  });
-
-
-  // Go to the generated url
-  res.redirect(url);
-
-});
-
 // Google OAuth 2 callback
 router.get("/oauth2callback", function(req, res) {
   var code = req.query.code;
@@ -159,7 +142,6 @@ router.get("/oauth2callback", function(req, res) {
     oauth2Client.getToken(code, function(err, tokens) {
       // Now tokens contains an access_token and an optional refresh_token. Save them.
       if(!err) {
-        console.log(tokens);
         oauth2Client.setCredentials(tokens);
         
         getUserProfile(oauth2Client, function(err, profile) {
@@ -171,7 +153,7 @@ router.get("/oauth2callback", function(req, res) {
           } else {
 
             // Find user oc create in the database
-            findOrCreateUser(profile, function(err, user) {
+            findOrCreateUser(profile, tokens, function(err, user) {
               if(err) {
                 console.log(err);
                 res.redirect("/");
@@ -200,11 +182,35 @@ function getUserProfile(oauth2Client, callback) {
   });
 };
 
-function findOrCreateUser(profile, callback) {
-  
-  var user = { 
-    email: profile.emails[0].value
-  };
+function findOrCreateUser(profile, tokens, callback) {
 
-  callback(null, user);
+  // User query
+  var query = new azure.TableQuery()
+    .where('googleId eq ?', profile.id);
+
+  userModel.find(query, function(err, results) {
+
+    if(err) {
+      callback(err, null);
+      return;
+    }
+
+    if(results.length == 0) {
+
+      var newUser = {
+        email: profile.emails[0].value,
+        googleId: profile.id,
+        accessToken: tokens.access_token
+      };
+
+      userModel.addItem(newUser, function(err) {
+        if(err) {
+          throw err;
+        }
+         callback(null, newUser);
+      });
+    } else {
+      callback(err, results[0]);
+    }
+  });
 }

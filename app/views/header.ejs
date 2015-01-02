@@ -49,7 +49,8 @@
 
         <ul class="nav navbar-nav navbar-right">
         <% if(user) { %>
-          <li><a href="#"><%- user.email %></a></li>
+          <p class="navbar-text">Hello, <%- user.email._%></p>
+          <li class="navbar-right"><a href="/logout">Logout</a></li>
         <% } else { %>
           <li><a href="/login">Login</a></li>
         <% } %>

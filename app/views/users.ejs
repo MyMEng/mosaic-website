@@ -1,0 +1,14 @@
+<div id="users-list">
+<% if(users && users.length == 0) { %>
+
+	<p>No users found</p>
+
+<% } else { %> 
+	<ul>
+	<% users.forEach(function(user) { %>
+		<li><%= user.email._ %></li>
+		<li><%= user.googleId._ %></li>
+	<% }); %>
+	</ul>
+<% } %>
+</div>

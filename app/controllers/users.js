@@ -1,29 +1,19 @@
-var express = require('express'),
-  router = express.Router(),
-  multiparty = require('multiparty'),
-  uuid = require('node-uuid'),
-  google = require('googleapis'),
-
-  azure = require('azure-storage'),
-  queueSvc = azure.createQueueService(),              
-  blobSvc = azure.createBlobService(),
-  tableSvc = azure.createTableService();
-
+var azure = require("azure-storage");
 
 function UsersLists(user) {
   this.user = user;
 }
 
 UsersLists.prototype = {
-  showTasks: function(req, res) {
+  showUsers: function(req, res) {
     self = this;
     var query = new azure.TableQuery();
     self.user.find(query, function itemsFound(error, items) {
-      res.render('index',{title: 'My ToDo List ', users: items});
+      res.render('users',{title: 'All users', users: items});
     });
   },
 
-  addTask: function(req,res) {
+  addUser: function(req,res) {
     var self = this      
     var item = req.body.item;
     self.user.addItem(item, function itemAdded(error) {
@@ -35,10 +25,4 @@ UsersLists.prototype = {
   },
 }
 
-module.exports = function (app) {
-  app.use('/', router);
-};
-
-router.get('/users', function (req, res, next) {
-	res.send("Users!!");
-});
+module.exports = UsersLists;
