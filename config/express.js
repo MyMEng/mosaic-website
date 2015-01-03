@@ -31,6 +31,13 @@ module.exports = function(app, config) {
     saveUninitialized: true
   }));
 
+  app.use(function (req, res, next){
+    if(req.session && req.session.user) {
+      res.locals.user = req.session.user;
+    }
+    next();
+  });
+
   var routers = glob.sync(config.root + '/app/routers/*.js');
   routers.forEach(function (router) {
     require(router)(app);

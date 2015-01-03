@@ -31,7 +31,10 @@ var REDIRECT_URL = process.env.REDIRECT_URI;
 // Oauth 2 client
 var oauth2Client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 
-module.exports = function (app) {
+var app;
+
+module.exports = function (app_) {
+  app = app_;
   app.use('/', router);
 };
 
@@ -55,8 +58,11 @@ router.get('/', function (req, res, next) {
       // result contains the entries
       items.forEach(function(item) {
         // http://sally.blob.core.windows.net/movies/MOV1.AVI
-        photos.push("http://" + blobSvc.storageAccount + ".blob.core.windows.net/imagecontainer/"
-          + item.RowKey._);
+        photos.push({
+          url: "http://" + blobSvc.storageAccount + ".blob.core.windows.net/imagecontainer/"
+          + item.RowKey._,
+          name: item.RowKey._
+          });
       });
 
       res.render('index', {
@@ -85,7 +91,7 @@ router.post('/upload', function (req, res) {
     if (part.filename) {
 
       // File size
-      var size = part.byteCount - part.byteOffset;
+      var size = part.byteCount; //- part.byteOffset;
       
       // Grab extension
       var re = /(?:\.([^.]+))?$/;
@@ -102,6 +108,7 @@ router.post('/upload', function (req, res) {
           blobSvc.createBlockBlobFromStream('imagecontainer', name, part, size, function(error){
             if(error) {
               console.log("Error creating blob", error);
+              
               return;
             }
             // Blob uploaded
@@ -155,7 +162,7 @@ router.post('/upload', function (req, res) {
   });
 
   form.parse(req);
-  res.send('OK.. uploading');
+  res.redirect('/');
 });
 
 // Google OAuth 2 callback
@@ -184,7 +191,8 @@ router.get("/oauth2callback", function(req, res) {
                 return;
               } else {
                 // Set session
-               req.session.user = user;
+                req.session.user = user;
+                app.locals = req.session.user;
                 res.redirect("/");
               }
             });

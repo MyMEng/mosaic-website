@@ -12,7 +12,7 @@
       
       <div class="form-group">
         <label for="snapshot">Choose the image you want to make a mosaic of.</label>
-        <input type="file" class="form-control" name="snapshot" />
+        <input type="file" class="form-control" name="snapshot" accept='image/*' />
         <p class="help-block">We will create a mosaic of this picture based on the images you will submit in next step.</p>
       </div>
       
@@ -27,7 +27,7 @@
 		<% images.forEach(function(image) { %>
       <div class="col-sm-6 col-md-4">
   			<div class="thumbnail">
-          <img src="<%= image %>" />
+          <a href="/photos/<%= image.name %>"><img src="<%= image.url %>" /></a>
         </div>
       </div>
 		<% }); %>
