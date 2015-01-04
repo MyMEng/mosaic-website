@@ -31,6 +31,7 @@ router.get('/photos/:photoId', function (req, res) {
   });
 });
 
+var fs = require('fs');
 // Handle uploads for the photo
 router.post('/photos/:photoId/upload', function (req, res) {
 
@@ -41,24 +42,50 @@ router.post('/photos/:photoId/upload', function (req, res) {
   // See how many files to expect
   var form = new multiparty.Form();
 
-  form.on('part', function(part) {
+  var bytesReadSoFar = 0;
 
-    console.log(part);
+  var filesList = {};
 
-    // File size
-    var size = part.byteCount - part.byteOffset;
+  form.on('file', function(fieldname, file) {
+
+    var filename = file.originalFilename;
 
     // Grab extension
     var re = /(?:\.([^.]+))?$/;
-    var ext = re.exec(part.filename)[1];  
+    var ext = re.exec(filename)[1];  
     // New random name
     var name = uuid.v4() + "." + ext;
 
+    // Find size
+    var size = file.size;
+
+    bytesReadSoFar += size;
+
+    console.log("Actual size for " + filename + " is " + size);
+    
+    // Open stream to the file
+    var stream = fs.createReadStream(file.path);
+
+    // Create blob
+    blobSvc.createBlockBlobFromStream('smallimages', name, stream, size, function(error){
+      if(error) {
+        console.log("Error creating blob", error);
+      } else {
+        console.log("Upoaded", name, filename);
+      }
+    });
+
+    console.log("Attempting to upload", {
+      filename: filename,
+      size: file.size,
+    });
+
+    if(bytesReadSoFar == form.totalFileSize) {
+      // Go back to the photo
+      res.redirect('/photos/' + photoId);
+    }
+
   });
 
-
   form.parse(req);
-
-  // Go back to the photo
-  res.redirect('/photos/' + photoId);
 });

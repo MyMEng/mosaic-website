@@ -91,7 +91,7 @@ router.post('/upload', function (req, res) {
     if (part.filename) {
 
       // File size
-      var size = part.byteCount; //- part.byteOffset;
+      var size = part.byteCount;
       
       // Grab extension
       var re = /(?:\.([^.]+))?$/;
