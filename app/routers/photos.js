@@ -81,14 +81,7 @@ var azureMulter = multer({
         console.log("Error creating blob", error);
       } else {
         console.log("Upoaded", file.name);
-
-        
       }
-    });
-
-    console.log("Attempting to upload", {
-      filename: file.name,
-      size: file.size,
     });
   }
 });
@@ -101,22 +94,37 @@ router.post('/photos/:photoId/upload', azureMulter, function(req, res) {
 
   if(req.files.minatures.length)
   {
-    req.files.minatures.forEach(function(file) {
-      createTableAndSendToQueue(req, res, file);
-    });
-  } else {
-    console.log(req.files.minatures);
-  }
+    var fileCount = req.files.minatures.length;
+    var filesReported = 0;
 
-  res.redirect('/photos/' + photoId);
+    req.files.minatures.forEach(function(file) {
+      createTableAndSendToQueue(req, res, file, function() {
+        filesReported++;
+
+        if(filesReported == fileCount) {
+          onUploadFinished(req, res);
+        }
+      });
+    });
+
+  } else {
+    createTableAndSendToQueue(req, res, req.files.minatures, onUploadFinished);
+  }
 });
 
-function createTableAndSendToQueue (req, res, file) {
+function onUploadFinished(req, res) {
+
+  var photoId = req.params.photoId;
+
+  res.redirect('/photos/' + photoId);
+}
+
+function createTableAndSendToQueue (req, res, file, callback) {
 
     var photoId = req.params.photoId;
 
     // Make a request for analysis
-    var queueName = "imagesqueue";
+    var queueName = "smallimagesqueue";
 
     // Create the queue if it doesn't exist
     queueSvc.createQueueIfNotExists(queueName, function(error, result, response){
@@ -147,7 +155,9 @@ function createTableAndSendToQueue (req, res, file) {
           }
 
           // Message inserted
-          return;
+          if(callback) {
+            callback(req, res);
+          }
         });
       });
     });
