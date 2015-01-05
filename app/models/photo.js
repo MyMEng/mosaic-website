@@ -28,18 +28,20 @@ Photo.prototype = {
 
   addItem: function(item, callback) {
     self = this;
+
     // use entityGenerator to set types
     // NOTE: RowKey must be a string type, even though
     // it contains a GUID in this example.
     var itemDescriptor = {
       PartitionKey: entityGen.String(self.partitionKey),
       RowKey: entityGen.String(item.imageName),
-      hue: entityGen.Int32(item.hue),
-      saturation: entityGen.Int32(item.saturation),
-      value: entityGen.Int32(item.value),
-      local: entityGen.Boolean(item.local),
-      thumbnail: entityGen.String(item.thumbnail),
-      userId: entityGen.String(item.userId)
+      hue: entityGen.Int32(item.hue || -1),
+      saturation: entityGen.Int32(item.saturation || -1),
+      value: entityGen.Int32(item.value || -1),
+      local: entityGen.Boolean(item.local || true),
+      thumbnail: entityGen.String(item.thumbnail || null),
+      userId: entityGen.String(item.userId),
+      parent: entityGen.String(item.parent || "")
     };
     
     self.storageClient.insertEntity(self.tableName, itemDescriptor, function entityInserted(error) {

@@ -46,7 +46,7 @@ router.get('/', function (req, res, next) {
 
     // Get photos from table
     var query = new azure.TableQuery()
-        .where('PartitionKey eq ?', 'allphotos')
+        .where('parent eq ?', "")
         .and('userId eq ?', req.session.user.googleId._);
 
 
@@ -115,43 +115,21 @@ router.post('/upload', function (req, res) {
             // Make a request for analysis
             var queueName = "imagesqueue";
 
-            // Create 
-            // Create the queue if it doesn't exist
-            queueSvc.createQueueIfNotExists(queueName, function(error, result, response){
-              
+            if(error) {
+              console.log("Error creating the queue", error);
+              return;
+            }
 
-              if(error) {
-                console.log("Error creating the queue", error);
-                return;
+            var photoItem = {
+              imageName: name,
+              userId: req.session.user.googleId._
+            };
+            
+            // Add entry to user photos
+            photoModel.addItem(photoItem, function(err) {
+              if(err) {
+                console.log("Error inserting photo", err);
               }
-
-              var photoItem = {
-                imageName: name,
-                hue: -1,
-                saturation: -1,
-                value: -1,
-                local: true,
-                thumbnail: "",
-                userId: req.session.user.googleId._
-              };
-              
-              // Add entry to user photos
-              photoModel.addItem(photoItem, function(err) {
-
-                // Add message the queue
-                queueSvc.createMessage(queueName, photoItem.imageName, function(error, result, response){
-                
-                if(error){
-                  console.log("Error inserting the message", error);
-                  return;
-                }
-
-                // Message inserted
-                return;
-              });
-              
-
-              });
             });
           });
         } else {

@@ -5,14 +5,14 @@
 </div>
 
 <div id="upload-form" class="row">
+    <h2>Add small image</h2>
     <div class="col-sm-12">
-    
     <form action="/photos/<%= photo.name %>/upload" method="post" 
       enctype="multipart/form-data">
       
       <div class="form-group">
-        <label for="snapshot">Choose the image you want to make a mosaic of.</label>
-        <input type="file" class="form-control" name="snapshot" multiple accept='image/*' />
+        <label for="minatures">Choose the image you want to make a mosaic of.</label>
+        <input type="file" class="form-control" name="minatures" multiple accept='image/*' />
         <p class="help-block">We will create a mosaic of this picture based on the images you will submit in next step.</p>
       </div>
       
@@ -21,6 +21,17 @@
     </form>
 
     </div>
+    <div id="pictures row">
+      <h2>Photos uploaded so far:</h2>
+      <% images.forEach(function(image) { %>
+      <div class="col-sm-6 col-md-4">
+        <div class="thumbnail">
+          <img src="<%= image.url %>" />
+        </div>
+      </div>
+      <% }); %>
+  </div>
+
 </div>
 
 <% include footer %>
