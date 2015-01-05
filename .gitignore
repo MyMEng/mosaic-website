@@ -2,3 +2,4 @@ node_modules/
 public/components
 .sass-cache
 setenv.bat
+setenv.ps1
