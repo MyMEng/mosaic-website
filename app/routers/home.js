@@ -129,6 +129,8 @@ router.post('/upload', function (req, res) {
             photoModel.addItem(photoItem, function(err) {
               if(err) {
                 console.log("Error inserting photo", err);
+              } else {
+                res.redirect('/');
               }
             });
           });
@@ -140,7 +142,7 @@ router.post('/upload', function (req, res) {
   });
 
   form.parse(req);
-  res.redirect('/');
+
 });
 
 // Google OAuth 2 callback

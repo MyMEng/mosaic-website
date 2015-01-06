@@ -35,12 +35,12 @@ Photo.prototype = {
     var itemDescriptor = {
       PartitionKey: entityGen.String(self.partitionKey),
       RowKey: entityGen.String(item.imageName),
+      userId: entityGen.String(item.userId),
+      
       hue: entityGen.Int32(item.hue || -1),
       saturation: entityGen.Int32(item.saturation || -1),
       value: entityGen.Int32(item.value || -1),
       local: entityGen.Boolean(item.local || true),
-      thumbnail: entityGen.String(item.thumbnail || null),
-      userId: entityGen.String(item.userId),
       parent: entityGen.String(item.parent || "")
     };
     
@@ -55,10 +55,13 @@ Photo.prototype = {
   updateItem: function(rKey, callback) {
     self = this;
     self.storageClient.retrieveEntity(self.tableName, self.partitionKey, rKey, function entityQueried(error, entity) {
+      
       if(error) {
         callback(error);
       }
+      
       entity.completed._ = true;
+      
       self.storageClient.updateEntity(self.tableName, entity, function entityUpdated(error) {
         if(error) {
           callback(error);
