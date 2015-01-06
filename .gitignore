@@ -3,3 +3,4 @@ public/components
 .sass-cache
 setenv.bat
 setenv.ps1
+npm-*.log

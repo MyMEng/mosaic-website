@@ -14,6 +14,8 @@ var multer = require('multer');
 
 var Photo = require("../models/photo")
 
+var ensureAuth = require("../middleware/ensureAuth");
+
 // Initialize model
 var photoModel = new Photo(tableSvc, "photos", "allphotos");
 
@@ -23,7 +25,7 @@ module.exports = function (app) {
 
 
 // Show specific photo
-router.get('/photos/:photoId', function (req, res) {
+router.get('/photos/:photoId', ensureAuth, function (req, res) {
   
   var photoId = req.params.photoId;
 
@@ -86,8 +88,83 @@ var azureMulter = multer({
   }
 });
 
+// Delete photo and all children
+router.get("/photos/:photoId/delete", ensureAuth, function (req, res) {
+
+  var photoId = req.params.photoId;
+
+
+  // Find children
+  var query = new azure.TableQuery()
+      .where('parent eq ?', photoId)
+      .and('userId eq ?', req.session.user.googleId._);
+
+  // Find child photos
+  photoModel.find(query, function(err, items) {
+    if(err) {
+      throw err;
+    }
+
+    // result contains the entries
+    items.forEach(function(item) {
+
+      var childPhotoId = item.RowKey._;
+
+      tableSvc.deleteEntity("photos", item, function(error) {
+        if(error) {
+          console.log(error);
+        } else {
+          // Delete from small images blob
+          blobSvc.deleteBlob("smallimages", childPhotoId, function(error) {
+            if(error) {
+              console.log(error);
+            }
+          });
+        }
+      });
+    });
+  });
+
+  var query = new azure.TableQuery()
+    .where('RowKey eq ?', photoId)
+    .and('userId eq ?', req.session.user.googleId._);
+
+  // Find photo
+  photoModel.find(query, function(err, items) {
+    if(err) {
+      res.render('error', {
+        title: "Cannot find photo",
+        message: err.message,
+        error: err
+      });
+      return;
+    }
+
+    if(items && items.length == 0) {
+      res.redirect("/");
+      return;
+    }
+      
+    tableSvc.deleteEntity("photos", items[0], function(error) {
+      if(error) {
+        console.log(error);
+      } else {
+        // Done deleteing
+        res.redirect("/");   
+      }
+    });
+  });
+
+  // Delete from small images blob
+  blobSvc.deleteBlob("imagecontainer", photoId, function(error) {
+    if(error) {
+      console.log(error);
+    }
+  });
+});
+
 // Handle uploads for the photo
-router.post('/photos/:photoId/upload', azureMulter, function(req, res) {
+router.post('/photos/:photoId/upload', ensureAuth, azureMulter, function(req, res) {
     console.log("After upload")
   
   var photoId = req.params.photoId;
