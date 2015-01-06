@@ -115,23 +115,37 @@ router.post('/upload', function (req, res) {
             // Make a request for analysis
             var queueName = "imagesqueue";
 
-            if(error) {
-              console.log("Error creating the queue", error);
-              return;
-            }
-
-            var photoItem = {
-              imageName: name,
-              userId: req.session.user.googleId._
-            };
-            
-            // Add entry to user photos
-            photoModel.addItem(photoItem, function(err) {
-              if(err) {
-                console.log("Error inserting photo", err);
-              } else {
-                res.redirect('/');
+            // Create the queue if it doesn't exist
+            queueSvc.createQueueIfNotExists(queueName, function(error, result, response){
+      
+              if(error) {
+                console.log("Error creating the queue", error);
+                return;
               }
+
+              var photoItem = {
+                imageName: name,
+                userId: req.session.user.googleId._
+              };
+              
+              // Add entry to user photos
+              photoModel.addItem(photoItem, function(err) {
+                if(err) {
+                  console.log("Error inserting photo", err);
+                  return;
+                } else {
+                  // Add message the queue
+                  queueSvc.createMessage(queueName, photoItem.imageName, function(error, result, response){
+                    
+                    if(error){
+                      console.log("Error inserting the message", error);
+                      return;
+                    }
+                    res.redirect('/');
+                  });
+                }
+              });
+
             });
           });
         } else {
