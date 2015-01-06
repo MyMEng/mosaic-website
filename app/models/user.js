@@ -38,11 +38,11 @@ User.prototype = {
       googleId: entityGen.String(item.googleId),
       accessToken: entityGen.String(item.accessToken)
     };
-    self.storageClient.insertEntity(self.tableName, itemDescriptor, function entityInserted(error) {
+    self.storageClient.insertEntity(self.tableName, itemDescriptor,  {echoContent: true}, function entityInserted(error, result, response) {
       if(error){  
         callback(error);
       }
-      callback(null);
+      callback(null, result);
     });
   },
 

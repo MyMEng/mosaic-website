@@ -215,11 +215,11 @@ function findOrCreateUser(profile, tokens, callback) {
         accessToken: tokens.access_token
       };
 
-      userModel.addItem(newUser, function(err) {
+      userModel.addItem(newUser, function(err, response) {
         if(err) {
           throw err;
         }
-         callback(null, newUser);
+         callback(null, response);
       });
     } else {
       callback(err, results[0]);
