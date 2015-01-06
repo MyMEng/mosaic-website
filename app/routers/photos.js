@@ -163,6 +163,37 @@ router.get("/photos/:photoId/delete", ensureAuth, function (req, res) {
   });
 });
 
+router.get("/photos/:photoId/analyze", ensureAuth, function (req, res) {
+
+  var photoId = req.params.photoId;
+  var queueName = "mosaicqueue";
+
+  queueSvc.createQueueIfNotExists(queueName, addMessageToTheQueue);
+
+  function addMessageToTheQueue(error) {
+    if(error) {
+      console.log("Error creating the queue", error);
+    }
+
+    queueSvc.createMessage(queueName, photoId, onBlobAdded);
+  }
+
+  function onBlobAdded(error) {
+    if(error) {
+      res.render('error', {
+        title: "Error adding to the queue",
+        message: error.message,
+        error: error
+      });
+      return;
+    }
+
+    res.render("confirmation", {
+      title: "Mosaic is being created"
+    });
+  }
+});
+
 // Handle uploads for the photo
 router.post('/photos/:photoId/upload', ensureAuth, azureMulter, function(req, res) {
     console.log("After upload")
