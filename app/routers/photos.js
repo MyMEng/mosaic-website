@@ -163,7 +163,7 @@ router.get("/photos/:photoId/delete", ensureAuth, function (req, res) {
   });
 
   var query = new azure.TableQuery()
-    .where('   eq ?', photoId)
+    .where('eq ?', photoId)
     .and('userId eq ?', req.session.user.googleId._);
 
   // Find photo
