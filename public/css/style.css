@@ -11,3 +11,6 @@ a {
 #pictures ul li {
   display: inline;
 }
+.navbar-brand {
+  font-family: "Lobster";
+}

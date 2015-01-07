@@ -31,38 +31,76 @@ router.get('/photos/:photoId', ensureAuth, function (req, res) {
 
   var photos = [];
 
-  // Get photos from table
+  // Find main photo
   var query = new azure.TableQuery()
-      .where('parent eq ?', photoId)
-      .and('userId eq ?', req.session.user.googleId._);
+    .where('RowKey eq ?', photoId);
 
   photoModel.find(query, function(err, items) {
+
     if(err) {
-      throw err;
+      res.render('error', {
+        title: "Cannot find photo",
+        message: err.message,
+        error: err
+      });
+      return;
     }
 
-    // result contains the entries
-    items.forEach(function(item) {
-      // http://sally.blob.core.windows.net/movies/MOV1.AVI
-      photos.push({
-        url: "http://" + blobSvc.storageAccount + ".blob.core.windows.net/smallimages/"
-        + item.RowKey._,
-        name: item.RowKey._
+    var photo = items[0];
+
+    if(photo.mosaicId)
+    {
+     res.render("mosaic", {
+        title: "Mosaic",
+        photo: {
+          url:  "http://" + blobSvc.storageAccount + ".blob.core.windows.net/imagecontainer/"
+              + photo.mosaicId._,
+          name: photo.mosaicId._
+        }
+      });
+
+    } else {
+
+      // Get photos from table
+      var imagesQuery = new azure.TableQuery()
+        .where('parent eq ?', photoId)
+        .and('userId eq ?', req.session.user.googleId._);
+
+      photoModel.find(imagesQuery, function(err, items) {
+        if(err) {
+          res.render('error', {
+            title: "Cannot find photo",
+            message: err.message,
+            error: err
+          });
+          return;
+        }
+
+        // result contains the entries
+        items.forEach(function(item) {
+          // http://sally.blob.core.windows.net/movies/MOV1.AVI
+          photos.push({
+            url: "http://" + blobSvc.storageAccount + ".blob.core.windows.net/smallimages/"
+            + item.RowKey._,
+            name: item.RowKey._
+            });
         });
-    });
 
-    res.render("singlePhoto", {
-      title: "Details of photo",
-      photo: {
-        url:  "http://" + blobSvc.storageAccount + ".blob.core.windows.net/imagecontainer/"
-            + photoId,
-        name: photoId
-      },
-      images: photos
-    });
+        res.render("singlePhoto", {
+          title: "Details of photo",
+          photo: {
+            url:  "http://" + blobSvc.storageAccount + ".blob.core.windows.net/imagecontainer/"
+                + photoId,
+            name: photoId
+          },
+          images: photos
+        });
 
+      });
+    }
   });
 
+ 
 });
 
 var azureMulter = multer({
@@ -92,7 +130,6 @@ var azureMulter = multer({
 router.get("/photos/:photoId/delete", ensureAuth, function (req, res) {
 
   var photoId = req.params.photoId;
-
 
   // Find children
   var query = new azure.TableQuery()
@@ -126,7 +163,7 @@ router.get("/photos/:photoId/delete", ensureAuth, function (req, res) {
   });
 
   var query = new azure.TableQuery()
-    .where('RowKey eq ?', photoId)
+    .where('   eq ?', photoId)
     .and('userId eq ?', req.session.user.googleId._);
 
   // Find photo

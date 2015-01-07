@@ -1,0 +1,22 @@
+<% include header %>
+
+  <h1> Your mosaic is ready
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="thumbnail">
+        <img src="<%= photo.url %>" alt="Main mosaic photo">
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 col-md-offset-5">
+      <a class="btn btn-success btn-lg" href="<%= photo.url %>">Download</a>
+
+      <div class="fb-share-button" data-href="<%= photo.url %>" data-layout="button_count"></div>
+    </div>
+  </div>
+</div>
+
+<% include footer %>
