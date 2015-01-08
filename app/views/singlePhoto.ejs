@@ -6,16 +6,33 @@
 
 <a href="/photos/<%= photo.name %>/delete" class="btn btn-danger">Delete photo</a>
 
+<script type="text/javascript">
+    function checkFile() {
+        var fileElement = document.getElementById("minatures");
+        var fileExtension = "";
+        if (fileElement.value.lastIndexOf(".") > 0) {
+            fileExtension = fileElement.value.substring(fileElement.value.lastIndexOf(".") + 1, fileElement.value.length);
+        }
+        if (fileExtension == "gif") {
+            alert("You must select a PNG or JPG file for upload");
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+</script>
+
 <div id="upload-form" class="row">
     <h2>Add small image</h2>
     <div class="col-sm-12">
     <form action="/photos/<%= photo.name %>/upload" method="post" 
-      enctype="multipart/form-data">
+      enctype="multipart/form-data" onsubmit="checkFile();">
       
       <div class="form-group">
-        <label for="minatures">Choose the image you want to make a mosaic of.</label>
-        <input type="file" class="form-control" name="minatures" multiple accept='image/*' />
-        <p class="help-block">We will create a mosaic of this picture based on the images you will submit in next step.</p>
+        <label for="minatures">Choose some images that we will use to create your mosiac from (jpg or png).</label>
+        <input id="minatures" type="file" class="form-control" name="minatures" multiple accept='image/*' />
+        <p class="help-block">We will use these pictures to create the mosaic of the image uploaded in the previous step.</p>
       </div>
       
       <input type="submit" class="btn btn-default" value="Upload" />
@@ -43,5 +60,7 @@
 
   <% } %>
 </div>
+
+
 
 <% include footer %>

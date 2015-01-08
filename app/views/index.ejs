@@ -7,12 +7,31 @@
   <div id="upload-form" class="row">
     <div class="col-sm-12">
     
+      <script type="text/javascript">
+    function checkFile() {
+        var fileElement = document.getElementById("snapshot");
+        var fileExtension = "";
+        if (fileElement.value.lastIndexOf(".") > 0) {
+            fileExtension = fileElement.value.substring(fileElement.value.lastIndexOf(".") + 1, fileElement.value.length);
+        }
+        if (fileExtension == "gif") {
+            alert("You must select a PNG or JPG file for upload");
+            return false;
+        }
+        else {
+            
+            return true;
+        }
+    }
+</script>
+
     <form action="/upload" method="post" 
-      enctype="multipart/form-data">
+      enctype="multipart/form-data"
+      onsubmit="return checkFile();">
       
       <div class="form-group">
-        <label for="snapshot">Choose the image you want to make a mosaic of.</label>
-        <input type="file" class="form-control" name="snapshot" accept='image/*' />
+        <label for="snapshot">Choose the image (jpg or png) you want to make a mosaic of.</label>
+        <input id="snapshot" type="file" class="form-control" name="snapshot" accept='image/*' />
         <p class="help-block">We will create a mosaic of this picture based on the images you will submit in next step.</p>
       </div>
       
@@ -22,6 +41,8 @@
 
     </div>
   </div>
+
+
 
   <div id="pictures row">
 		<% images.forEach(function(image) { %>
