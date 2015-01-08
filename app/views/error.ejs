@@ -1,7 +1,14 @@
 <% include header %>
 
-  <%- message %>
-  <%- error.status %>
-  <%- error.stack %>
+  <h1>An error has occured: <%-title %> 
+  
+  <h2>Error message:</h2>
+  <p><%- message %></p>
+
+  <h2>Error status: </h2>
+  <p><%- error.status %></p>
+
+  <h2>Stack trace:</h2>
+  <p><%- error.stack %></p>
   
 <% include footer %>
