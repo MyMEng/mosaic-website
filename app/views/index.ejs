@@ -1,7 +1,7 @@
 <% include header %>
   
   <div class="page-header">
-    <h1><%-title %></h1>
+    <h1>Upload and browse photos for mosaics</h1>
   </div>
 
   <div id="upload-form" class="row">
@@ -43,8 +43,9 @@
   </div>
 
 
-
+  <% if(images && images.length > 0) { %>
   <div id="pictures row">
+    <h2>Your mosaics:</h2>
 		<% images.forEach(function(image) { %>
       <div class="col-sm-6 col-md-4">
   			<div class="thumbnail">
@@ -53,5 +54,6 @@
       </div>
 		<% }); %>
   </div>
+  <% } %>
 
 <% include footer %>

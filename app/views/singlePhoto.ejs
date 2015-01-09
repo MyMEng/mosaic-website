@@ -40,6 +40,8 @@
     </form>
 
     </div>
+
+    <% if(images && images.length > 0) { %>
     <div id="pictures row">
       <h2>Photos uploaded so far:</h2>
       <% images.forEach(function(image) { %>
@@ -49,7 +51,8 @@
         </div>
       </div>
       <% }); %>
-  </div>
+    </div>
+    <% } %>
 
   <% if(images && images.length != 0) { %>
   <div class="row">

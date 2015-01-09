@@ -226,7 +226,8 @@ router.get("/photos/:photoId/analyze", ensureAuth, function (req, res) {
     }
 
     res.render("confirmation", {
-      title: "Mosaic is being created"
+      title: "Mosaic is being created",
+      urlBack: "/photos/" + photoId
     });
   }
 });

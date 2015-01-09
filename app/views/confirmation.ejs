@@ -1,5 +1,12 @@
 <% include header %>
 
-<p>Your mosaic is being created. Please be patient and refresh in a second</p>
+<p>Your mosaic is being created. Please be patient and refresh in a second. We will automatically redirect you in 10 seconds.</p>
+
+<script type="text/javascript">
+  setTimeout(function () {
+   window.location.href = "<%- urlBack %>"; //will redirect to your blog page (an ex: blog.html)
+}, 10000); //will call the function after 2 secs.
+
+</script>
 
 <% include footer %>
