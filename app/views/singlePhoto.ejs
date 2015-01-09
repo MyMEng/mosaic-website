@@ -1,5 +1,10 @@
 <% include header %>
 
+<div class="page-header">
+    <h1>Adding more photos</h1>
+    <p>Below is the picture we will turn into a mosaic. Please add more photos so that we can stitch them together.</p>
+</div>
+
 <div class="thumbnail">
 	<img src="<%= photo.url %>" alt="Main mosaic photo">
 </div>
@@ -23,26 +28,27 @@
     }
 </script>
 
-<div id="upload-form" class="row">
-    <h2>Add small image</h2>
+  <div id="upload-form" class="row">
+    <h3>Add small images</h3>
+    <p>We will use these pictures to create the mosaic of the image uploaded in the previous step.</p>
     <div class="col-sm-12">
-    <form action="/photos/<%= photo.name %>/upload" method="post" 
-      enctype="multipart/form-data" onsubmit="checkFile();">
+      <form action="/photos/<%= photo.name %>/upload" method="post" 
+        enctype="multipart/form-data" onsubmit="checkFile();">
+        
+        <div class="form-group">
+          <label for="minatures">Choose some images that we will use to create your mosiac from (jpg or png).</label>
+          <input id="minatures" type="file" class="form-control" name="minatures" multiple accept='image/*' />
+          <p class="help-block">JPG or PNG only.</p>
+        </div>
+        
+        <input type="submit" class="btn btn-default" value="Upload" />
       
-      <div class="form-group">
-        <label for="minatures">Choose some images that we will use to create your mosiac from (jpg or png).</label>
-        <input id="minatures" type="file" class="form-control" name="minatures" multiple accept='image/*' />
-        <p class="help-block">We will use these pictures to create the mosaic of the image uploaded in the previous step.</p>
-      </div>
-      
-      <input type="submit" class="btn btn-default" value="Upload" />
-    
-    </form>
+      </form>
 
     </div>
 
     <% if(images && images.length > 0) { %>
-    <div id="pictures row">
+    <div id="pictures" class="row">
       <h2>Photos uploaded so far:</h2>
       <% images.forEach(function(image) { %>
       <div class="col-sm-3 col-md-2">
@@ -54,12 +60,12 @@
     </div>
     <% } %>
 
-  <% if(images && images.length != 0) { %>
-  <div class="row">
-    <div class="col-sm-6 col-md-6">
-      <a href="/photos/<%= photo.name %>/analyze" class="btn btn-success">Generate mosaic</a>
+    <% if(images && images.length != 0) { %>
+    <div class="row">
+      <div class="col-sm-6 col-md-6">
+        <a href="/photos/<%= photo.name %>/analyze" class="btn btn-success">Generate mosaic</a>
+      </div>
     </div>
-  </div>
 
   <% } %>
 </div>

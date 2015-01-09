@@ -234,11 +234,11 @@ router.get("/photos/:photoId/analyze", ensureAuth, function (req, res) {
 
 // Handle uploads for the photo
 router.post('/photos/:photoId/upload', ensureAuth, azureMulter, function(req, res) {
-    console.log("After upload")
   
   var photoId = req.params.photoId;
 
-  if(req.files.minatures.length)
+  if(req.files && req.files.minatures && 
+    req.files.minatures.length > 0)
   {
     var fileCount = req.files.minatures.length;
     var filesReported = 0;
@@ -253,8 +253,10 @@ router.post('/photos/:photoId/upload', ensureAuth, azureMulter, function(req, re
       });
     });
 
-  } else {
+  } else if(req.files && req.files.minatures) {
     createTableAndSendToQueue(req, res, req.files.minatures, onUploadFinished);
+  } else {
+    res.redirect('/photos/' + photoId);
   }
 });
 
