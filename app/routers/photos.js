@@ -44,6 +44,9 @@ router.get('/photos/:photoId', ensureAuth, function (req, res) {
         error: err
       });
       return;
+    } else if(items.length == 0) {
+      res.redirect("/");
+      return;
     }
 
     var photo = items[0];
